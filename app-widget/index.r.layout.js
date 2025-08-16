@@ -8,7 +8,7 @@ import {
   DEFAULT_COLOR_TRANSPARENT,
 } from "../utils/config/constants";
 
-const { w } = getAppWidgetSize()
+const { w,h } = getAppWidgetSize()
 
 export const Colors = {
   default:0x333333,
@@ -37,6 +37,7 @@ export const IMG_LOADING_PROGRESS = {
   pos_y: px(0),
   center_x: px(20),
   center_y: px(20),
+  auto_scale: true,
 };
 
 export const BG_VALUE_TEXT = {

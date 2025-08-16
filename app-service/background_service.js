@@ -2,7 +2,8 @@ import {connectStatus} from '@zos/ble'
 import * as notificationMgr from "@zos/notification";
 import { Time } from '@zos/sensor'
 import { BasePage } from "@zeppos/zml/base-page";
-import { writeFileSync,rmSync} from "@zos/fs";
+import { writeFileSync,rmSync, statSync} from "@zos/fs";
+import { set, REPEAT_ONCE } from '@zos/alarm'
 
 const timeSensor = new Time();
 let inicioServicioPendiente=false;
@@ -17,11 +18,11 @@ AppService( //600 ms for execution
     },
         
     onInit() {
-        notificationMgr.notify({
+        /*notificationMgr.notify({
           title: "Watchdrip+ Service",
           content: "Watchdrip+ Service Started",
           actions: []
-        });
+        });*/
         try{
           const file_name_running = "serviceStarted.status";
           writeFileSync({
@@ -170,6 +171,19 @@ AppService( //600 ms for execution
       }
     },
 
+    isServiceControlled()
+    {
+        const file_name_running = "serviceControl.status";
+        try {
+
+            const result = statSync({ path: file_name_running,});
+            return result;
+        } catch (error) {
+            return false;
+        }
+        return false;
+    },
+
     onDestroy() {
       try{
         const file_name_running = "serviceStarted.status";
@@ -180,23 +194,38 @@ AppService( //600 ms for execution
       {
         console.log("Exception error: " + exception);
       }
-      notificationMgr.notify({
+      /*notificationMgr.notify({
         title: "Watchdrip+ Service",
         content: "Watchdrip+ Service Stopped",
         actions: []
-      });
+      });*/
 
-      try
+      if(this.isServiceControlled())
       {
-        this.call({
-          method: 'Service Control',
-          params: {
-            param1: 'STOP',
-          },
-        });
-      }catch(exception)
+        const option = {
+          url: 'page/index',
+          param: 'restart_service',
+          repeat_type: REPEAT_ONCE,
+        };
+        let dateTime = new Date();
+        dateTime.setSeconds(dateTime.getSeconds() + 1);
+        option.time = Math.floor(dateTime.getTime() / 1000);
+        const id = set(option);
+      }
+      else
       {
-        console.log("Exception error: " + exception);
+        try
+        {
+          this.call({
+            method: 'Service Control',
+            params: {
+              param1: 'STOP',
+            },
+          });
+        }catch(exception)
+        {
+          console.log("Exception error: " + exception);
+        }
       }
     },
 }));

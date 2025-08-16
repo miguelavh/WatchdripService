@@ -29,10 +29,15 @@ export const IMG_LOGO = {
 export const IMG_LOADING_PROGRESS = {
   x: (DEVICE_WIDTH-w)/2+(w - px(50)),
   y: px(10),
+  w: px(40),
+  h: px(40),
   src: 'images/gearmin.png',
   angle:0,
+  pos_x: px(0),
+  pos_y: px(0),
   center_x: px(20),
   center_y: px(20),
+  auto_scale: true,
 };
 
 export const BG_VALUE_TEXT = {

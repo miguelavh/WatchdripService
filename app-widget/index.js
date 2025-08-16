@@ -130,9 +130,9 @@ AppWidget({
 
     niceTime(t) {
       let unit = 'sec';
-      console.log("Antes: " + t);
+      //console.log("Antes: " + t);
       t = t / 1000;
-      console.log("Despues: " + t);
+      //console.log("Despues: " + t);
       if (t !== 1) unit = 'sec';
 
       if (t > 59) {

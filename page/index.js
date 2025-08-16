@@ -2,7 +2,8 @@ import hmUI from "@zos/ui";
 import * as appService from "@zos/app-service";
 import { queryPermission, requestPermission } from "@zos/app";
 import { Time } from '@zos/sensor'
-import { readFileSync } from "@zos/fs";
+import { readFileSync, writeFileSync, rmSync } from "@zos/fs";
+import { home } from "@zos/router";
 
 import {
   FETCH_BUTTON,
@@ -18,7 +19,7 @@ import {
 
 const PagesType = {
   MAIN: 'main',
-  UPDATE_LOCAL: 'update_local'
+  RESTART_SERVICE: 'restart_service'
 };
 
 let vm;
@@ -60,11 +61,32 @@ function startTimeService() {
     complete_func: (info) => {
       if (info.result) 
       {
-        vm.startLoader();
-        vm.state.running = true;
-        setProperty(vm.state.serviceText, hmUI.prop.TEXT, "Service started");
-        if(vm.state.serviceBtn!=null)
-          setProperty(vm.state.serviceBtn, hmUI.prop.TEXT, "Stop Service");
+        if(data.page===PagesType.MAIN)
+        {
+          try{
+            const file_name_running = "serviceControl.status";
+            writeFileSync({
+              path: file_name_running,
+              data: "started",
+              options: {
+                encoding: 'utf8',
+              },
+            });
+          }catch(exception)
+          {
+            console.log("Exception error: " + exception);
+          }
+          vm.startLoader();
+          vm.state.running = true;
+          setProperty(vm.state.serviceText, hmUI.prop.TEXT, "Service started");
+          if(vm.state.serviceBtn!=null)
+            setProperty(vm.state.serviceBtn, hmUI.prop.TEXT, "Stop Service");
+        }
+        else
+        {
+          home();
+          return;
+        }
       }
     },
   });
@@ -72,6 +94,16 @@ function startTimeService() {
 
 function stopTimeService() {
   console.log(`=== stop service: ${serviceFile} ===`);
+  try{
+    const file_name_running = "serviceControl.status";
+    rmSync({
+      path: file_name_running,
+    });
+  }catch(exception)
+  {
+    console.log("Exception error: " + exception);
+  }
+
   const result = appService.stop({
     url: serviceFile,
     param: `service=${serviceFile}&action=stop`,
@@ -86,8 +118,9 @@ function stopTimeService() {
       }
     },
   });
-
 }
+
+let data = {page: PagesType.MAIN};
 
 Page({
     name: 'ble-sendData.page',
@@ -103,8 +136,6 @@ Page({
     },
 
     onInit(p) {
-
-      let data = {page: PagesType.MAIN};
       try {
         if (!(!p || p === 'undefined')) {
             data = JSON.parse(p);
@@ -153,9 +184,9 @@ Page({
 
     niceTime(t) {
       let unit = 'sec';
-      console.log("Antes: " + t);
+      //console.log("Antes: " + t);
       t = t / 1000;
-      console.log("Despues: " + t);
+      //console.log("Despues: " + t);
       if (t !== 1) unit = 'sec';
 
       if (t > 59) {
@@ -239,34 +270,54 @@ Page({
 
       let services = appService.getAllAppServices();
       vm.state.running = services.includes(serviceFile);
-      if (vm.state.running)
+      if(data.page===PagesType.MAIN)
       {
-        textWidget="Service started";
-        textButton="Stop Service";
-        this.startLoader();
+        if (vm.state.running)
+        {
+          textWidget="Service started";
+          textButton="Stop Service";
+          this.startLoader();
+        }
+        else
+        {
+          textWidget="Service stopped";
+          textButton="Start Service";
+          this.stopLoader();
+        }
       }
       else
       {
-        textWidget="Service stopped";
-        textButton="Start Service";
-        this.stopLoader();
+        if (vm.state.running)
+        {
+          textWidget="Service started";
+          home();
+          return;
+        }
+        else
+        {
+          textWidget="Service starting";
+          permissionRequest(vm);
+        }
       }
 
       vm.state.serviceText=hmUI.createWidget(hmUI.widget.TEXT, {
         ...FETCH_RESULT_TEXT,
         text: textWidget,
       });
-        
-      vm.state.serviceBtn=hmUI.createWidget(hmUI.widget.BUTTON, {
-          ...FETCH_BUTTON,
-          text: textButton,
-          click_func: () => {
-            if (vm.state.running)
-              stopTimeService(vm);
-            else
-              permissionRequest(vm);
-          },
-      });
+
+      if(data.page===PagesType.MAIN)
+      {
+        vm.state.serviceBtn=hmUI.createWidget(hmUI.widget.BUTTON, {
+            ...FETCH_BUTTON,
+            text: textButton,
+            click_func: () => {
+              if (vm.state.running)
+                stopTimeService(vm);
+              else
+                permissionRequest(vm);
+            },
+        });
+      }
     }
   }
 );

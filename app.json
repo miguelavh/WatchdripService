@@ -6,7 +6,7 @@
     "appType": "app",
     "version": {
       "code": 1,
-      "name": "2.0.2"
+      "name": "2.0.4"
     },
     "icon": "icon.png",
     "vender": "nimrod100",
@@ -15,6 +15,7 @@
   "permissions": [
     "device:os.local_storage",
     "data:os.device.info",
+    "device:os.alarm",
     "device:os.bg_service",
     "device:os.notification"
   ],
@@ -62,10 +63,10 @@
           "path": "app-side/index"
         },
         "app-service": {
-          "services": ["app-service/background_service"]
+          "services": ["app-service/background_service","app-service/alarm_service"]
         },
         "app-event": {
-          "path": "app-service/background_service"
+          "path": "app-service/alarm_service"
         }
       },
       "platforms": [
