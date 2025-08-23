@@ -12,8 +12,8 @@ export const Colors = {
   defaultTransparent:0x059AF7,
   white:0xffffff,
   black:0x000000,
-  bgHigh:0xffa0a0,
-  bgLow:0x8bbbff,
+  bgHigh:0xfdef03,
+  bgLow:0xfd030f,
   accent:0xffbeff37,
 };
 
