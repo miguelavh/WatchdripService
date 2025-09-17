@@ -150,11 +150,14 @@ Page({
         this.progressTimer = setInterval(() => {
             this.updateLoader();
         }, PROGRESS_UPDATE_INTERVAL_MS);
-
-        this.progressTimerRead = setInterval(() => {
-            this.readFileInfo();
-        }, 10000);        
         this.readFileInfo();
+
+        setTimeout(() => {
+            this.readFileInfo();
+            this.progressTimerRead = setInterval(() => {
+                this.readFileInfo();
+            }, 10000);    
+        }, 2000);    
     },
 
     updateLoader() {

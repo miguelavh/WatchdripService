@@ -208,7 +208,7 @@ AppService( //600 ms for execution
           repeat_type: REPEAT_ONCE,
         };
         let dateTime = new Date();
-        dateTime.setSeconds(dateTime.getSeconds() + 1);
+        dateTime.setSeconds(dateTime.getSeconds() + 5);
         option.time = Math.floor(dateTime.getTime() / 1000);
         const id = set(option);
       }

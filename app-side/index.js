@@ -15,13 +15,13 @@ function myCallback(ctx){
       {
         try
         {
-          this.call({
+          ctx.call({
                 method: 'HEARTBEAT',
                 params: {
                   param1: 'OK',
                 },
               });      
-          this.setLastSentTime(time.getTime());
+          ctx.setLastSentTime(time.getTime());
         }catch(excep)
         {
           console.log("Exception error inner: " + excep);
@@ -37,35 +37,9 @@ AppSideService(
   BaseSideService({...fetchModule,
     onInit() {
       console.log('app side service invoke onInit');
-      if(ctx===null)
-        ctx=this;
-      if (MyTimerID===null) 
-      {
-        MyTimerID=setInterval(myCallback, 1000*10, ctx);
-        try
-        {
-          myCallback(ctx);
-        }catch(exception)
-        {
-          console.log('Exception OnInit:'+exception)
-        }
-      }
     },
     onRun() {
       console.log('app side service invoke onRun')
-      if(ctx===null)
-        ctx=this;
-      if (MyTimerID===null) 
-      {
-        MyTimerID=setInterval(myCallback, 1000*10, ctx);
-        try
-        {
-          myCallback(ctx);
-        }catch(exception)
-        {
-          console.log('Exception OnRun:'+exception)
-        }
-      }
     },
 
     onDestroy() {
@@ -83,6 +57,7 @@ AppSideService(
           {
             if(req.params.param1==='START')
             {
+              this.setLastSentTime(time.getTime());              
               if (MyTimerID!==null) 
               {
                 clearInterval(MyTimerID);
@@ -91,7 +66,13 @@ AppSideService(
               if(ctx===null)
                 ctx=this;
               MyTimerID=setInterval(myCallback, 1000*10, ctx);
-              myCallback(ctx);
+              try
+              {
+                myCallback(ctx);
+              }catch(exception)
+              {
+                console.log('Exception OnCall:'+exception)
+              }
               //this.setTryNum(0);
             }
             else
@@ -113,7 +94,7 @@ AppSideService(
           }
         }catch(exception)
         {
-          console.log("Exception error: " + exception);
+          console.log("Exception error OnCall Gen: " + exception);
         }
      },
 
